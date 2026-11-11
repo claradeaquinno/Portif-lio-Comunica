@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="COMUNICA: aplicativo de Comunicação Aumentativa e Alternativa (CAA) com gamificação, inteligência artificial e síntese de voz.">
+<meta name="theme-color" content="#e4f2fc">
+<meta name="color-scheme" content="light">
+<title>COMUNICA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap">
+<style>
+/* Tons pastel da tela de abertura do app: branco no centro, azul-bebê nas bordas. */
+:root {
+  --navy: #173a5e;
+  --navy-soft: #3f6488;
+  --bg-center: #f7fbff;
+  --bg-mid: #e6f3fc;
+  --bg-edge: #c3e2f5;
+  --card: rgba(255, 255, 255, 0.78);
+  --line: #cfe6f6;
+  --pill: #b3dbf2;       /* botão "Toque na tela para começar" */
+  --pill-line: #84c2e6;
+  --yellow: #ffd659;     /* amarelo do Guri */
+  --t-blue: #dcefff;
+  --t-yellow: #fff2c4;
+  --t-mint: #d8f4e6;
+  --t-pink: #fde3ea;
+  --t-peach: #ffe8d6;
+  --t-lilac: #ebe4fb;
+  --font: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --font-title: 'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+  --r: 22px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--navy);
+  background-color: var(--bg-mid);
+  /* Véu pastel (semitransparente) por cima do quarto do Guri. Aumente o 0.xx para clarear mais. */
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 38%, rgba(247,251,255,.86) 0%, rgba(230,243,252,.78) 50%, rgba(195,226,245,.72) 100%) fixed,
+    url('assets/imagens/plano-inicio.png') center / cover no-repeat fixed,
+    var(--bg-mid);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+:focus { outline: none; }
+:focus-visible { outline: 4px solid var(--yellow); outline-offset: 3px; border-radius: 10px; }
+
+.skip-link { position: absolute; left: 8px; top: -60px; background: var(--navy); color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 800; z-index: 200; transition: top .15s ease; }
+.skip-link:focus { top: 8px; }
+
+.wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-title); line-height: 1.12; margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(28px, 4.2vw, 42px); font-weight: 800; }
+h3 { font-size: 20px; font-weight: 800; }
+p { margin: 0; }
+a { color: inherit; }
+img { max-width: 100%; }
+
+.card { background: var(--card); border: 2px solid var(--line); border-radius: var(--r); box-shadow: 0 6px 18px rgba(23,58,94,.07); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+/* Ícones próprios (SVG de traço, mesma espessura e cantos arredondados) */
+.ic { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 16px; display: grid; place-items: center; background: var(--t-blue); border: 1.5px solid rgba(23,58,94,.08); }
+.ic svg { width: 26px; height: 26px; fill: none; stroke: var(--navy); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ic.sm { width: 40px; height: 40px; flex-basis: 40px; border-radius: 13px; }
+.ic.sm svg { width: 22px; height: 22px; }
+.t-yellow { background: var(--t-yellow); }
+.t-mint { background: var(--t-mint); }
+.t-pink { background: var(--t-pink); }
+.t-peach { background: var(--t-peach); }
+.t-lilac { background: var(--t-lilac); }
+
+/* Topo */
+.top { position: sticky; top: 0; z-index: 30; padding-top: max(10px, env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
+.top .bar { display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; border-radius: 999px; background: rgba(255,255,255,.85); }
+.mark { display: flex; align-items: center; text-decoration: none; }
+.mark img { height: 34px; width: auto; display: block; }
+.mark span { font-family: var(--font-title); font-weight: 800; font-size: 22px; color: var(--navy); }
+.nav { display: flex; gap: 4px; overflow-x: auto; margin-left: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { white-space: nowrap; text-decoration: none; font-weight: 800; font-size: 14px; padding: 8px 12px; border-radius: 999px; color: var(--navy-soft); }
+.nav a:hover { background: var(--t-blue); color: var(--navy); }
+
+/* Herói, como a tela de abertura */
+.hero { padding-block: 28px 40px; }
+.hero .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 40px; align-items: center; }
+.hero-text { display: grid; justify-items: start; gap: 14px; }
+.hero-art { position: relative; display: grid; justify-items: center; padding-bottom: 10px; }
+
+/* Celular com a tela do app */
+.phone { position: relative; width: min(100%, 300px); padding: 36px 12px 14px; border-radius: 46px; background: linear-gradient(160deg, #2a5379, #173a5e); box-shadow: 0 0 0 2px #0f2b47, 0 26px 50px rgba(23,58,94,.28), inset 0 0 0 2px rgba(255,255,255,.12); }
+.phone::before { content: ""; position: absolute; top: 13px; left: 50%; width: 30%; height: 12px; transform: translateX(-50%); border-radius: 999px; background: #0f2b47; }
+.phone::after { content: ""; position: absolute; right: -4px; top: 22%; width: 4px; height: 12%; border-radius: 0 4px 4px 0; background: #0f2b47; }
+.phone-screen { border-radius: 28px; overflow: hidden; background: #dcebf6; line-height: 0; }
+.phone-screen img { width: 100%; height: auto; display: block; }
+.hero-logo { width: min(80vw, 300px); height: auto; display: block; filter: drop-shadow(0 4px 8px rgba(23,58,94,.18)); }
+.logo-text { font-family: var(--font-title); font-weight: 800; font-size: clamp(52px, 9vw, 88px); line-height: .95; color: var(--yellow); -webkit-text-stroke: 4px var(--navy); paint-order: stroke fill; }
+.hero-guri { width: clamp(180px, 26vw, 260px); height: auto; display: block; filter: drop-shadow(0 14px 22px rgba(23,58,94,.18)); animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.tag { font-family: var(--font-title); font-weight: 800; font-size: clamp(22px, 2.8vw, 30px); }
+.lead { max-width: 52ch; font-weight: 600; color: var(--navy-soft); font-size: 18px; }
+.pill-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 12px 34px; border-radius: 999px; background: var(--pill); border: 2px solid var(--pill-line); color: var(--navy); font: 800 18px var(--font-title); text-decoration: none; box-shadow: 0 6px 16px rgba(23,58,94,.12); transition: transform .12s ease, background .12s ease; margin-top: 6px; }
+.pill-btn:hover { transform: translateY(-2px); background: #c4e4f6; }
+
+/* Seções */
+section { padding-block: 44px; }
+.head { display: grid; gap: 10px; margin-bottom: 22px; justify-items: start; }
+.head p { max-width: 64ch; font-weight: 600; color: var(--navy-soft); }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-title); font-weight: 800; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--navy-soft); }
+.eyebrow b { display: inline-grid; place-items: center; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 999px; background: var(--pill); border: 1.5px solid var(--pill-line); color: var(--navy); font-size: 15px; letter-spacing: 0; }
+.panel { padding: clamp(20px, 3.4vw, 34px); }
+.prose { display: grid; gap: 14px; }
+.prose p { max-width: 66ch; }
+
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
+/* Como surgiu: trilha de 3 etapas + balão com a inspiração */
+.origin { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 22px; align-items: center; }
+.trail { list-style: none; margin: 0; padding: clamp(18px, 3vw, 28px); display: grid; gap: 4px; }
+.trail li { position: relative; display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 16px; padding-bottom: 18px; }
+.trail li:last-child { padding-bottom: 0; }
+.trail li:not(:last-child)::before { content: ""; position: absolute; left: 23px; top: 52px; bottom: 2px; width: 2px; border-radius: 2px; background: repeating-linear-gradient(180deg, var(--pill-line) 0 6px, transparent 6px 11px); }
+.trail strong { display: block; font-family: var(--font-title); font-size: 18px; line-height: 1.2; margin: 2px 0 4px; }
+.trail p { font-size: 16px; color: var(--navy-soft); font-weight: 600; }
+.quote { position: relative; margin: 0 0 22px; padding: 26px 26px 24px; display: grid; gap: 12px; background: #ffffff; border: 2px solid #f4dc8f; border-radius: 26px; box-shadow: 0 10px 24px rgba(23,58,94,.1); }
+.quote::after { content: ""; position: absolute; left: 44px; bottom: -14px; width: 24px; height: 24px; background: #ffffff; border-right: 2px solid #f4dc8f; border-bottom: 2px solid #f4dc8f; transform: rotate(45deg); border-bottom-right-radius: 6px; }
+.quote-label { display: flex; align-items: center; gap: 10px; font-family: var(--font-title); font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--navy-soft); }
+.quote p { font-family: var(--font-title); font-weight: 800; font-size: clamp(20px, 2.2vw, 24px); line-height: 1.3; color: var(--navy); }
+.quote footer { padding: 12px 0 0; border-top: 2px dashed #f4dc8f; text-align: left; font-size: 15px; font-weight: 700; color: var(--navy-soft); text-shadow: none; }
+
+/* Passos */
+.step { padding: 22px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.step-top { display: flex; align-items: center; gap: 12px; }
+.step .n { font-family: var(--font-title); font-weight: 800; font-size: 14px; color: var(--navy-soft); text-transform: uppercase; letter-spacing: .05em; }
+.step.wide { grid-column: 1 / -1; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-weight: 800; font-size: 13px; padding: 6px 12px; border-radius: 999px; background: var(--t-blue); }
+.modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.mode { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 18px; background: rgba(255,255,255,.8); border: 1.5px solid var(--line); }
+.mode p { font-size: 15px; }
+.mode strong { font-family: var(--font-title); font-size: 18px; display: block; }
+.step.game { background: var(--t-yellow); border-color: #f4dc8f; }
+
+/* Faixa com a turma do Guri, passando sem parar */
+.guris { padding-block: 8px 36px; }
+.guris-title { text-align: center; font-family: var(--font-title); font-weight: 800; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--navy-soft); margin-bottom: 12px; }
+.marquee { overflow: hidden; padding-block: 6px 14px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.marquee-track { display: flex; gap: 14px; width: max-content; padding: 0; margin: 0; list-style: none; animation: passar 45s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes passar { from { transform: translateX(0); } to { transform: translateX(calc(-50% - 7px)); } }
+.guri-card { flex: 0 0 auto; width: 150px; display: grid; justify-items: center; gap: 2px; padding: 12px 10px; text-align: center; }
+.guri-card img { width: 112px; height: 112px; object-fit: contain; filter: drop-shadow(0 6px 8px rgba(23,58,94,.18)); }
+.guri-card b { font-family: var(--font-title); font-size: 16px; line-height: 1.1; margin-top: 4px; }
+.guri-card small { font-size: 12px; font-weight: 800; color: var(--navy-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .marquee { overflow-x: auto; }
+  .marquee-track { animation: none; }
+  .marquee-track [aria-hidden="true"] { display: none; }
+}
+
+/* Acessibilidade */
+ul.grid-3 { padding: 0; margin: 0; }
+.feat { list-style: none; padding: 16px; display: flex; gap: 14px; align-items: flex-start; min-width: 0; }
+.feat strong { display: block; font-family: var(--font-title); font-size: 17px; line-height: 1.2; margin-top: 2px; }
+.feat span { font-size: 14.5px; color: var(--navy-soft); font-weight: 600; }
+
+/* Tecnologias */
+.tech { padding: 16px 18px; min-width: 0; }
+.tech code { font: 800 16px var(--font-title); display: block; }
+.tech span { font-size: 14px; color: var(--navy-soft); font-weight: 600; }
+
+/* Equipe */
+.person { padding: 20px; display: grid; gap: 8px; align-content: start; justify-items: start; min-width: 0; }
+.avatar { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; font: 800 24px var(--font-title); border: 2px solid rgba(23,58,94,.1); }
+.person p { font-size: 15px; color: var(--navy-soft); font-weight: 600; }
+.advisor { padding: 20px; display: flex; gap: 14px; align-items: flex-start; }
+.advisor .inst { display: block; font-weight: 800; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: var(--navy-soft); }
+.advisor .org { font-size: 15px; font-weight: 600; color: var(--navy-soft); }
+.sub-head { margin: 34px 0 14px; display: grid; gap: 10px; justify-items: start; }
+.sub-head p { max-width: 64ch; font-weight: 600; color: var(--navy-soft); }
+
+/* Eventos */
+.timeline { display: grid; gap: 14px; }
+.ev { padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start; }
+.ev-body { display: grid; gap: 6px; }
+.ev .when { font-weight: 800; font-size: 14px; color: var(--navy-soft); }
+.ev.next { background: var(--t-yellow); border-color: #f4dc8f; }
+.ev-badge { justify-self: start; font-weight: 800; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: var(--pill); border: 1.5px solid var(--pill-line); }
+
+/* Créditos */
+dl.grid-3 { margin: 0; }
+.credit { padding: 16px 18px; min-width: 0; }
+.credit dt { font-size: 12.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--navy-soft); }
+.credit dd { margin: 4px 0 0; font-weight: 700; }
+
+/* Fechamento */
+.closing { padding: clamp(26px, 4vw, 44px); display: grid; gap: 14px; justify-items: center; text-align: center; }
+.closing p { max-width: 62ch; font-weight: 600; color: var(--navy-soft); }
+.closing .tag { color: var(--navy); }
+.closing .hero-logo { width: min(70vw, 260px); }
+
+
+/* Voltar ao topo */
+.to-top { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); z-index: 40; width: 52px; height: 52px; border-radius: 50%; background: var(--pill); border: 2px solid var(--pill-line); box-shadow: 0 6px 14px rgba(23,58,94,.18); display: grid; place-items: center; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s ease, transform .2s ease; }
+.to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+.to-top svg { width: 24px; height: 24px; fill: none; stroke: var(--navy); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (max-width: 900px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr); }
+  .hero-text { justify-items: center; text-align: center; }
+  .two, .origin { grid-template-columns: minmax(0, 1fr); }
+  .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  section { padding-block: 30px; }
+  .grid-2, .grid-3, .grid-4, .modes { grid-template-columns: minmax(0, 1fr); }
+  .nav { display: none; }
+  .logo-text { -webkit-text-stroke: 3px var(--navy); }
+}
+
+/* ===== Camada interativa ===== */
+/* Barra de progresso de leitura */
+.progress { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 60; transform-origin: 0 50%; transform: scaleX(var(--p, 0)); background: linear-gradient(90deg, #84c2e6, #ffd659, #9fe0be); }
+
+/* Selo pulsando no topo do herói */
+.live { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 10px; border-radius: 999px; background: rgba(255,255,255,.8); border: 1.5px solid var(--line); font-weight: 800; font-size: 13px; color: var(--navy-soft); }
+.live i { position: relative; width: 10px; height: 10px; border-radius: 50%; background: #4caf7d; }
+.live i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #4caf7d; animation: ping 1.8s ease-out infinite; }
+@keyframes ping { from { transform: scale(1); opacity: .7; } to { transform: scale(2.8); opacity: 0; } }
+
+/* Palavra que troca sozinha */
+.swap { display: inline-block; min-width: 1ch; color: var(--navy); background: linear-gradient(transparent 62%, rgba(255,214,89,.75) 62%); padding: 0 4px; border-radius: 4px; }
+.swap.out { animation: swapOut .25s ease forwards; }
+.swap.in { animation: swapIn .3s ease; }
+@keyframes swapOut { to { opacity: 0; transform: translateY(-8px); } }
+@keyframes swapIn { from { opacity: 0; transform: translateY(8px); } }
+
+/* Celular 3D + brilhos ao redor */
+.hero-art { perspective: 1100px; }
+.hero-art::before, .hero-art::after { content: ""; position: absolute; border-radius: 50%; filter: blur(30px); z-index: -1; animation: orb 9s ease-in-out infinite alternate; }
+.hero-art::before { width: 260px; height: 260px; background: rgba(255,214,89,.45); top: 6%; left: 4%; }
+.hero-art::after { width: 220px; height: 220px; background: rgba(132,194,230,.55); bottom: 4%; right: 6%; animation-delay: -4s; }
+@keyframes orb { to { transform: translate(24px, -18px) scale(1.12); } }
+.phone { transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform .25s ease-out; animation: float 6s ease-in-out infinite; }
+@keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+.phone-screen { position: relative; }
+.phone-screen::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 45%, transparent 60%); transform: translateX(var(--shine, -60%)); transition: transform .25s ease-out; }
+
+/* Números animados */
+.stats { padding-block: 0 20px; }
+.stats ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stat { padding: 18px; display: grid; gap: 2px; text-align: center; }
+.stat b { font: 800 clamp(36px, 5vw, 52px)/1 var(--font-title); background: linear-gradient(180deg, #2f6a9b, var(--navy)); -webkit-background-clip: text; background-clip: text; color: transparent; font-variant-numeric: tabular-nums; }
+.stat span { font-weight: 700; font-size: 14.5px; color: var(--navy-soft); }
+
+/* Cartões com luz que segue o mouse e leve elevação */
+.card.fx { position: relative; transition: translate .2s ease, transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.card.fx::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .2s ease; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(132,194,230,.28), transparent 65%); }
+.card.fx:hover { translate: 0 -4px; box-shadow: 0 14px 30px rgba(23,58,94,.13); border-color: var(--pill-line); }
+.card.fx:hover::before { opacity: 1; }
+.card.fx:hover .ic { animation: wiggle .5s ease; }
+@keyframes wiggle { 30% { transform: rotate(-8deg) scale(1.08); } 60% { transform: rotate(6deg) scale(1.08); } }
+
+/* Tecnologias com cara de terminal */
+.tech code::before { content: "> "; color: #4caf7d; }
+.tech code::after { content: "_"; margin-left: 2px; color: var(--pill-line); opacity: 0; }
+.tech:hover code::after { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 1; } }
+
+/* Menu marca a seção atual */
+.nav a.active { background: var(--pill); color: var(--navy); }
+
+/* Entrada ao rolar */
+.js-reveal .reveal { opacity: 0; transform: translateY(26px); transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0ms); }
+.js-reveal .reveal.on { opacity: 1; transform: none; }
+
+@media (max-width: 900px) { .stats ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) {
+  .phone { animation: none; transform: none; }
+  .js-reveal .reveal { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+<!-- Ícones desenhados para o site (traço 2px, cantos arredondados) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-categorias" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+  <symbol id="i-frase" viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3.5V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M7.5 11h2M11 11h2M14.5 11h2"/></symbol>
+  <symbol id="i-modos" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></symbol>
+  <symbol id="i-circular" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="6.5" r="1.3"/><circle cx="17.5" cy="12" r="1.3"/><circle cx="12" cy="17.5" r="1.3"/><circle cx="6.5" cy="12" r="1.3"/></symbol>
+  <symbol id="i-carrossel" viewBox="0 0 24 24"><rect x="7.5" y="5" width="9" height="14" rx="2"/><path d="M4 8v8M20 8v8"/></symbol>
+  <symbol id="i-voz" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+  <symbol id="i-estrela" viewBox="0 0 24 24"><path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/></symbol>
+  <symbol id="i-ia" viewBox="0 0 24 24"><path d="M12 3.5l1.7 5 5 1.7-5 1.7-1.7 5-1.7-5-5-1.7 5-1.7z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+  <symbol id="i-trofeu" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M8.5 20.5h7M10 17h4"/></symbol>
+  <symbol id="i-perfil" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-tamanho" viewBox="0 0 24 24"><path d="M3 18l4-11 4 11M4.4 14.5h5.2"/><path d="M14 18l3-8 3 8M15 15.5h4"/></symbol>
+  <symbol id="i-lua" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+  <symbol id="i-olho" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-varredura" viewBox="0 0 24 24"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M7 12h10"/></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-ritmo" viewBox="0 0 24 24"><path d="M3 12h3l2-5 3 10 3-8 2 3h5"/></symbol>
+  <symbol id="i-teclado" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M8 14.5h8"/></symbol>
+  <symbol id="i-controle" viewBox="0 0 24 24"><path d="M7 7.5h10a4.5 4.5 0 0 1 4.3 5.8l-1 3.4a2.3 2.3 0 0 1-3.9.9L14.5 15.5h-5l-1.9 2.1a2.3 2.3 0 0 1-3.9-.9l-1-3.4A4.5 4.5 0 0 1 7 7.5z"/><path d="M8 10.5v3M6.5 12h3M15.5 11h.01M17.5 13h.01"/></symbol>
+  <symbol id="i-capelo" viewBox="0 0 24 24"><path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 11.5v4c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4M21.5 9.5v5"/></symbol>
+  <symbol id="i-local" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+  <symbol id="i-aviao" viewBox="0 0 24 24"><path d="M21 4.5L3.5 11l6 2.2L12 20l3-6.5"/><path d="M9.5 13.2L21 4.5l-6 9"/></symbol>
+  <symbol id="i-ideia" viewBox="0 0 24 24"><path d="M9 17.5h6M10 20.5h4"/><path d="M12 3.5a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3.5z"/></symbol>
+  <symbol id="i-codigo" viewBox="0 0 24 24"><path d="M8.5 7.5L4 12l4.5 4.5M15.5 7.5L20 12l-4.5 4.5M13.5 5l-3 14"/></symbol>
+  <symbol id="i-aspas" viewBox="0 0 24 24"><path d="M10 7.5H6.5A1.5 1.5 0 0 0 5 9v3.5A1.5 1.5 0 0 0 6.5 14H9v1.5A2.5 2.5 0 0 1 6.5 18M19 7.5h-3.5A1.5 1.5 0 0 0 14 9v3.5a1.5 1.5 0 0 0 1.5 1.5H18v1.5a2.5 2.5 0 0 1-2.5 2.5"/></symbol>
+  <symbol id="i-cima" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+</svg>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+<a href="#inicio" class="skip-link">Pular para o conteúdo</a>
+
+<header class="top">
+  <div class="wrap">
+    <div class="bar card">
+      <a class="mark" href="#inicio" aria-label="COMUNICA, início">
+        <img src="assets/imagens/comunica-logo.png" alt="" onerror="this.hidden = true; this.nextElementSibling.hidden = false">
+        <span hidden>COMUNICA</span>
+      </a>
+      <nav class="nav" aria-label="Seções">
+        <a href="#apresentacao">Apresentação</a>
+        <a href="#origem">Como surgiu</a>
+        <a href="#funciona">Como funciona</a>
+        <a href="#acessibilidade">Acessibilidade</a>
+        <a href="#tecnologias">Tecnologias</a>
+        <a href="#equipe">Equipe</a>
+        <a href="#eventos">Eventos</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-text">
+      <span class="live"><i aria-hidden="true"></i>Artigo aceito no ATSN'26 · Paris</span>
+      <h1>
+        <img class="hero-logo" src="assets/imagens/comunica-logo.png" alt="COMUNICA"
+          onerror="this.hidden = true; this.nextElementSibling.hidden = false">
+        <span class="logo-text" hidden>COMUNICA</span>
+      </h1>
+      <p class="tag">Tecnologia que amplia a <span class="swap" id="swap">comunicação</span></p>
+      <p class="lead">Uma experiência interativa de Comunicação Aumentativa e Alternativa (CAA), que conecta desenvolvimento de jogos, inteligência artificial e acessibilidade para ampliar as possibilidades de comunicação.</p>
+      <a class="pill-btn" href="#apresentacao">Conheça o projeto</a>
+      </div>
+      <div class="hero-art">
+        <div class="phone">
+          <div class="phone-screen">
+            <img src="assets/imagens/app-tela-inicial.jpg" alt="Tela inicial do app COMUNICA no celular, com os botões Começar a comunicar, Favoritos, Categorias, Personalizar, Desafio da Comunicação e Versão não letrada">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="guris" aria-labelledby="gurisTitle">
+    <p class="guris-title" id="gurisTitle">A turma do Guri: 10 níveis de evolução</p>
+    <div class="marquee">
+      <ul class="marquee-track" id="guriTrack">
+        <li class="guri-card card"><img src="assets/imagens/mascote-inicio.png" alt="" onerror="this.style.visibility='hidden'"><b>Filhote</b><small>Nível 1 · 0 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-curioso-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Curioso</b><small>Nível 2 · 30 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-falante-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Falante</b><small>Nível 3 · 80 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-explorador-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Explorador</b><small>Nível 4 · 150 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-comunicador-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Comunicador</b><small>Nível 5 · 250 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-craque-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Craque</b><small>Nível 6 · 380 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-mestre-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Mestre</b><small>Nível 7 · 550 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-campeao-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Campeão</b><small>Nível 8 · 760 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-lenda-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Lenda</b><small>Nível 9 · 1010 XP</small></li>
+        <li class="guri-card card"><img src="assets/imagens/guri-supremo-transparente.png" alt="" onerror="this.style.visibility='hidden'"><b>Guri Supremo</b><small>Nível 10 · 1300 XP</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="stats" aria-label="O COMUNICA em números">
+    <div class="wrap">
+      <ul>
+        <li class="stat card"><b data-count="10">10</b><span>níveis de evolução do Guri</span></li>
+        <li class="stat card"><b data-count="9">9</b><span>recursos de acessibilidade</span></li>
+        <li class="stat card"><b data-count="2">2</b><span>formas de interação</span></li>
+        <li class="stat card"><b data-count="7">7</b><span>categorias de vocabulário</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="apresentacao">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>1</b> Apresentação</span>
+        <h2>Uma nova forma de se expressar</h2>
+      </div>
+      <div class="panel card prose">
+        <p>O COMUNICA é uma iniciativa de desenvolvimento de uma solução digital baseada em Comunicação Aumentativa e Alternativa (CAA), criada para oferecer novas possibilidades de expressão e comunicação a pessoas com dificuldades na comunicação oral.</p>
+        <p>A plataforma combina elementos de jogos digitais, recursos interativos e tecnologias assistivas para permitir que os usuários construam mensagens utilizando palavras, categorias temáticas e reprodução por voz.</p>
+        <p>Mais do que uma ferramenta digital, o COMUNICA busca explorar como a tecnologia pode contribuir para a autonomia, a expressão individual e a inclusão social.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="origem">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>2</b> Como surgiu o COMUNICA?</span>
+        <h2>Da observação de uma barreira real</h2>
+      </div>
+      <div class="origin">
+        <ol class="trail card">
+          <li>
+            <span class="ic t-mint"><svg aria-hidden="true"><use href="#i-olho"/></svg></span>
+            <div><strong>A observação</strong><p>O projeto surgiu a partir da observação das dificuldades enfrentadas por pessoas que não conseguem utilizar a fala oral como principal meio de comunicação.</p></div>
+          </li>
+          <li>
+            <span class="ic t-yellow"><svg aria-hidden="true"><use href="#i-ideia"/></svg></span>
+            <div><strong>A proposta</strong><p>A partir dessa observação, surgiu a proposta de desenvolver uma solução digital que oferecesse outras possibilidades de expressão, considerando diferentes formas de interação e necessidades dos usuários.</p></div>
+          </li>
+          <li>
+            <span class="ic t-lilac"><svg aria-hidden="true"><use href="#i-codigo"/></svg></span>
+            <div><strong>O projeto</strong><p>O COMUNICA foi concebido como um projeto de desenvolvimento tecnológico, buscando integrar programação, acessibilidade, interação humano-computador e gamificação.</p></div>
+          </li>
+        </ol>
+        <figure class="quote">
+          <span class="quote-label"><span class="ic sm t-yellow"><svg aria-hidden="true"><use href="#i-aspas"/></svg></span>A inspiração</span>
+          <blockquote style="margin:0"><p>Uma das inspirações foi a experiência de uma pessoa que utiliza a escrita e o celular para expressar seus pensamentos e necessidades.</p></blockquote>
+          <footer>Ela mostrou como a ausência de ferramentas adequadas pode criar barreiras na comunicação cotidiana.</footer>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="funciona">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>3</b> Como o COMUNICA funciona?</span>
+        <h2>A construção de mensagens vira uma experiência interativa</h2>
+        <p>Ao acessar a plataforma, o usuário encontra uma interface de comunicação na qual pode selecionar palavras, organizar expressões e construir frases de acordo com aquilo que deseja comunicar.</p>
+      </div>
+      <div class="grid-2">
+        <article class="step card">
+          <div class="step-top"><span class="ic"><svg aria-hidden="true"><use href="#i-categorias"/></svg></span><span class="n">3.1 · Escolha das palavras</span></div>
+          <h3>Categorias por tema</h3>
+          <p>O usuário explora categorias organizadas por temas, que facilitam a localização do vocabulário. Cada categoria reúne palavras de diferentes situações do cotidiano.</p>
+          <div class="pills"><span class="pill">Pessoas</span><span class="pill">Necessidades</span><span class="pill">Comida</span><span class="pill">Sentimentos</span><span class="pill">Atividades</span><span class="pill">Lugares</span><span class="pill">Ações</span></div>
+        </article>
+        <article class="step card">
+          <div class="step-top"><span class="ic t-mint"><svg aria-hidden="true"><use href="#i-frase"/></svg></span><span class="n">3.2 · Construção das mensagens</span></div>
+          <h3>Palavra por palavra</h3>
+          <p>Cada palavra selecionada passa a compor a frase. O usuário continua até formar uma mensagem que represente sua intenção comunicativa, e pode remover palavras, limpar a composição e organizar o conteúdo.</p>
+        </article>
+        <article class="step card wide">
+          <div class="step-top"><span class="ic t-lilac"><svg aria-hidden="true"><use href="#i-modos"/></svg></span><span class="n">3.3 · Duas formas de interação</span></div>
+          <h3>Teclado circular ou carrossel</h3>
+          <div class="modes">
+            <div class="mode"><span class="ic sm t-lilac"><svg aria-hidden="true"><use href="#i-circular"/></svg></span><p><strong>Teclado circular</strong>Organiza as opções em uma disposição circular para explorar e selecionar palavras por meio de uma interface interativa.</p></div>
+            <div class="mode"><span class="ic sm t-lilac"><svg aria-hidden="true"><use href="#i-carrossel"/></svg></span><p><strong>Carrossel de palavras</strong>Apresenta as opções em sequência, para navegar entre os elementos e selecionar os que farão parte da mensagem.</p></div>
+          </div>
+        </article>
+        <article class="step card">
+          <div class="step-top"><span class="ic t-peach"><svg aria-hidden="true"><use href="#i-voz"/></svg></span><span class="n">3.4 · Comunicação por voz</span></div>
+          <h3>A frase vira fala</h3>
+          <p>A síntese de fala transforma o texto selecionado em áudio, e a mensagem é comunicada oralmente pelo próprio dispositivo, ampliando a interação com as pessoas ao redor.</p>
+        </article>
+        <article class="step card">
+          <div class="step-top"><span class="ic t-yellow"><svg aria-hidden="true"><use href="#i-estrela"/></svg></span><span class="n">3.5 · Personalização do vocabulário</span></div>
+          <h3>Do jeito de cada pessoa</h3>
+          <p>É possível adicionar palavras personalizadas e salvar palavras e frases favoritas, facilitando o acesso às expressões usadas com mais frequência.</p>
+        </article>
+        <article class="step card wide">
+          <div class="step-top"><span class="ic t-pink"><svg aria-hidden="true"><use href="#i-ia"/></svg></span><span class="n">3.6 · Inteligência Artificial</span></div>
+          <h3>Sugestões com Google Gemini</h3>
+          <p>A IA sugere palavras e ajuda a continuar a mensagem. Ela é um recurso complementar: ajuda a encontrar possibilidades de expressão sem substituir as escolhas do usuário.</p>
+        </article>
+        <article class="step card wide game">
+          <div class="step-top"><span class="ic"><svg aria-hidden="true"><use href="#i-trofeu"/></svg></span><span class="n">3.7 · Gamificação</span></div>
+          <h3>Desafio da Comunicação</h3>
+          <p>Atividades de seleção de palavras e construção de respostas, com progressão e conquistas representadas por estrelas, para tornar a experiência mais dinâmica. Conforme a pessoa usa o app e ganha XP, o Guri sobe de nível e muda de visual, como mostra a faixa no início da página.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="acessibilidade">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>4</b> Acessibilidade e personalização</span>
+        <h2>Um princípio, não um extra</h2>
+        <p>A plataforma tem recursos de configuração que consideram diferentes necessidades motoras, visuais e comunicacionais.</p>
+      </div>
+      <ul class="grid-3">
+        <li class="feat card"><span class="ic sm"><svg aria-hidden="true"><use href="#i-perfil"/></svg></span><div><strong>Perfil Júnior e Sênior</strong><span>Diferentes apresentações da interface.</span></div></li>
+        <li class="feat card"><span class="ic sm t-yellow"><svg aria-hidden="true"><use href="#i-tamanho"/></svg></span><div><strong>Ajuste de tamanho</strong><span>Letras e botões maiores ou menores.</span></div></li>
+        <li class="feat card"><span class="ic sm t-lilac"><svg aria-hidden="true"><use href="#i-lua"/></svg></span><div><strong>Modo noturno</strong><span>Alternativa visual para a interface.</span></div></li>
+        <li class="feat card"><span class="ic sm t-pink"><svg aria-hidden="true"><use href="#i-olho"/></svg></span><div><strong>Recursos para daltonismo</strong><span>Identificação visual e contraste.</span></div></li>
+        <li class="feat card"><span class="ic sm t-mint"><svg aria-hidden="true"><use href="#i-varredura"/></svg></span><div><strong>Navegação por varredura</strong><span>O destaque percorre os elementos da tela.</span></div></li>
+        <li class="feat card"><span class="ic sm t-peach"><svg aria-hidden="true"><use href="#i-relogio"/></svg></span><div><strong>Velocidade de varredura</strong><span>Ritmo da navegação ajustável.</span></div></li>
+        <li class="feat card"><span class="ic sm"><svg aria-hidden="true"><use href="#i-ritmo"/></svg></span><div><strong>Velocidade da voz</strong><span>Ajuste da reprodução sonora.</span></div></li>
+        <li class="feat card"><span class="ic sm t-yellow"><svg aria-hidden="true"><use href="#i-teclado"/></svg></span><div><strong>Navegação por teclado</strong><span>Interação por comandos do teclado.</span></div></li>
+        <li class="feat card"><span class="ic sm t-lilac"><svg aria-hidden="true"><use href="#i-controle"/></svg></span><div><strong>Controles analógicos</strong><span>Suporte a dispositivos de controle compatíveis.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="tecnologias">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>5</b> Tecnologias utilizadas</span>
+        <h2>Do navegador à inteligência artificial</h2>
+      </div>
+      <div class="grid-3">
+        <div class="tech card"><code>HTML5</code><span>Estrutura das interfaces</span></div>
+        <div class="tech card"><code>CSS3</code><span>Estilização e organização visual</span></div>
+        <div class="tech card"><code>JavaScript</code><span>Lógica e interatividade</span></div>
+        <div class="tech card"><code>Node.js</code><span>Servidor e backend</span></div>
+        <div class="tech card"><code>Google Gemini API</code><span>Inteligência artificial</span></div>
+        <div class="tech card"><code>Web Speech API</code><span>Síntese de voz das mensagens</span></div>
+        <div class="tech card"><code>Gamepad API</code><span>Suporte a controles compatíveis</span></div>
+        <div class="tech card"><code>LocalStorage</code><span>Preferências e informações locais</span></div>
+        <div class="tech card"><code>Git e GitHub</code><span>Versionamento do código-fonte</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="equipe">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>6</b> Equipe de desenvolvimento</span>
+        <h2>Feito por estudantes e colaboradores</h2>
+        <p>Uma iniciativa coletiva, com pessoas envolvidas na concepção, programação, desenvolvimento de interfaces e recursos de acessibilidade.</p>
+      </div>
+      <div class="grid-4">
+        <article class="person card"><div class="avatar t-yellow" aria-hidden="true">C</div><h3>Clara de Aquino Rodrigues</h3><p>Desenvolvedora de jogos, responsável por programação, desenvolvimento de software e concepção da proposta.</p></article>
+        <article class="person card"><div class="avatar t-pink" aria-hidden="true">T</div><h3>Tayssa Beatriz</h3><p>Participação no desenvolvimento e na apresentação do projeto.</p></article>
+        <article class="person card"><div class="avatar t-mint" aria-hidden="true">M</div><h3>Mayke</h3><p>Participação no desenvolvimento e nos recursos de acessibilidade.</p></article>
+        <article class="person card"><div class="avatar t-lilac" aria-hidden="true">F</div><h3>Felipe Braga Ribeiro</h3><p>Integrante da equipe de desenvolvimento.</p></article>
+      </div>
+
+      <div class="sub-head">
+        <span class="eyebrow"><b>7</b> Orientação acadêmica</span>
+        <p>A participação dos pesquisadores contribui para o direcionamento acadêmico e tecnológico da iniciativa, com discussões sobre acessibilidade, desenvolvimento de software e interação humano-computador.</p>
+      </div>
+      <div class="grid-2">
+        <div class="advisor card"><span class="ic sm"><svg aria-hidden="true"><use href="#i-capelo"/></svg></span><div><span class="inst">UFPA</span><h3>Marcos César da Rocha Seruffo</h3><span class="org">Universidade Federal do Pará</span></div></div>
+        <div class="advisor card"><span class="ic sm t-yellow"><svg aria-hidden="true"><use href="#i-capelo"/></svg></span><div><span class="inst">Estácio de Belém</span><h3>Frederico Guilherme Santana Filho</h3><span class="org">Centro Universitário Estácio de Belém</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="eventos">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>8</b> Eventos e reconhecimento científico</span>
+        <h2>De Belém para Paris</h2>
+        <p>O COMUNICA vem conquistando espaço em atividades acadêmicas e eventos de tecnologia, gamificação e acessibilidade.</p>
+      </div>
+      <div class="timeline">
+        <article class="ev card">
+          <span class="ic t-mint"><svg aria-hidden="true"><use href="#i-local"/></svg></span>
+          <div class="ev-body">
+            <span class="when">UFPA · Belém</span>
+            <h3>GameZone — I Seminário de Gamificação da Amazônia</h3>
+            <p>Demonstração da proposta de comunicação acessível e dos recursos interativos, mostrando a gamificação aplicada a projetos de tecnologia assistiva.</p>
+          </div>
+        </article>
+        <article class="ev card next">
+          <span class="ic"><svg aria-hidden="true"><use href="#i-aviao"/></svg></span>
+          <div class="ev-body">
+            <span class="ev-badge">Aprovação internacional</span>
+            <span class="when">16 e 17 de dezembro de 2026 · Paris, França</span>
+            <h3>ATSN'26</h3>
+            <p>O artigo científico do COMUNICA foi aceito na 3rd International Conference and Forum on Assistive Technologies for Special Needs, levando a pesquisa a um espaço internacional de discussão sobre tecnologias assistivas.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="creditos">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><b>9</b> Créditos e autoria</span>
+      </div>
+      <dl class="grid-3">
+        <div class="credit card"><dt>Projeto</dt><dd>COMUNICA — Tecnologia Assistiva e Comunicação Acessível</dd></div>
+        <div class="credit card"><dt>Desenvolvimento</dt><dd>Equipe COMUNICA</dd></div>
+        <div class="credit card"><dt>Instituição</dt><dd>Centro Universitário Estácio de Belém</dd></div>
+        <div class="credit card"><dt>Orientação acadêmica</dt><dd>Universidade Federal do Pará (UFPA)</dd></div>
+        <div class="credit card"><dt>Orientadores</dt><dd>Marcos César da Rocha Seruffo (UFPA) · Frederico Guilherme Santana Filho (Estácio de Belém)</dd></div>
+        <div class="credit card"><dt>Integrantes</dt><dd>Clara de Aquino Rodrigues · Tayssa Beatriz · Mayke · Felipe Braga Ribeiro</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="proposito">
+    <div class="wrap">
+      <div class="closing card">
+        <span class="eyebrow"><b>10</b> Propósito e perspectivas</span>
+        <p>O COMUNICA integra engenharia, desenvolvimento de jogos, inteligência artificial e tecnologia assistiva. A iniciativa busca evoluir continuamente, a partir das necessidades identificadas no desenvolvimento, para que mais pessoas encontrem possibilidades de expressão, autonomia e participação social.</p>
+        <img class="hero-logo" src="assets/imagens/comunica-logo.png" alt="COMUNICA" onerror="this.hidden = true; this.nextElementSibling.hidden = false">
+        <div class="logo-text" aria-hidden="true" hidden>COMUNICA</div>
+        <p class="tag">Tecnologia para comunicar. Possibilidades para incluir.</p>
+        <p>Um projeto que transforma ideias em possibilidades de comunicação.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<a href="#inicio" class="to-top" id="toTop" aria-label="Voltar ao topo"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cima"/></svg></a>
+
+
+<script>
+  // Duplica a turma do Guri para a faixa girar sem emenda (a cópia fica oculta para leitores de tela).
+  (function () {
+    const track = document.getElementById('guriTrack');
+    [...track.children].forEach(li => {
+      const c = li.cloneNode(true);
+      c.setAttribute('aria-hidden', 'true');
+      track.appendChild(c);
+    });
+  })();
+  // Mostra o botão "voltar ao topo" depois de rolar um pouco.
+  (function () {
+    const toTop = document.getElementById('toTop');
+    const onScroll = () => toTop.classList.toggle('show', window.scrollY > 600);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+
+  // ===== Camada interativa (tudo desligado para quem pede menos movimento) =====
+  (function () {
+    const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fine = window.matchMedia('(pointer: fine)').matches;
+
+    // Barra de progresso de leitura
+    const bar = document.getElementById('progress');
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      bar.style.setProperty('--p', max > 0 ? (scrollY / max).toFixed(4) : 0);
+    };
+    addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+    // Menu marca a seção visível
+    const links = [...document.querySelectorAll('.nav a')];
+    const spy = new IntersectionObserver(entries => entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    links.forEach(a => { const sec = document.querySelector(a.getAttribute('href')); if (sec) spy.observe(sec); });
+
+    // Luz que segue o mouse nos cartões
+    document.querySelectorAll('.step, .feat, .tech, .person, .advisor, .ev, .credit, .stat, .trail, .panel').forEach(c => c.classList.add('fx'));
+    if (fine) document.addEventListener('pointermove', e => {
+      const c = e.target.closest('.card.fx'); if (!c) return;
+      const r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+
+    if (calm) return;
+
+    // Palavra que troca no subtítulo
+    const words = ['comunicação', 'autonomia', 'expressão', 'inclusão'];
+    const sw = document.getElementById('swap'); let i = 0;
+    setInterval(() => {
+      sw.classList.add('out');
+      setTimeout(() => { i = (i + 1) % words.length; sw.textContent = words[i]; sw.classList.remove('out'); sw.classList.add('in'); }, 250);
+      setTimeout(() => sw.classList.remove('in'), 600);
+    }, 2600);
+
+    // Celular inclina seguindo o mouse
+    const art = document.querySelector('.hero-art'), phone = document.querySelector('.phone'), screen = document.querySelector('.phone-screen');
+    if (fine && art) {
+      art.addEventListener('pointermove', e => {
+        const r = art.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+        phone.style.setProperty('--ry', (x * 18).toFixed(2) + 'deg');
+        phone.style.setProperty('--rx', (-y * 14).toFixed(2) + 'deg');
+        screen.style.setProperty('--shine', (x * 120) + '%');
+      });
+      art.addEventListener('pointerleave', () => { phone.style.setProperty('--ry', '0deg'); phone.style.setProperty('--rx', '0deg'); screen.style.setProperty('--shine', '-60%'); });
+    }
+
+    // Números contam ao aparecer
+    const count = new IntersectionObserver(entries => entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target, end = +el.dataset.count, t0 = performance.now(), dur = 1200;
+      const step = now => { const k = Math.min(1, (now - t0) / dur); el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+      el.textContent = '0'; requestAnimationFrame(step); count.unobserve(el);
+    }), { threshold: .6 });
+    document.querySelectorAll('[data-count]').forEach(el => count.observe(el));
+
+    // Blocos entram ao rolar, em cascata
+    document.documentElement.classList.add('js-reveal');
+    const items = document.querySelectorAll('main section:not(.hero):not(.guris) .head, main section:not(.hero):not(.guris) .sub-head, main section:not(.hero):not(.guris) .card');
+    items.forEach(el => {
+      el.classList.add('reveal');
+      const sibs = [...el.parentElement.children].filter(n => n.classList.contains('card'));
+      el.style.setProperty('--d', Math.min(sibs.indexOf(el), 5) * 70 + 'ms');
+    });
+    const rev = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('on'); rev.unobserve(e.target); }
+    }), { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+    items.forEach(el => rev.observe(el));
+  })();
+</script>
+</body>
+</html>
